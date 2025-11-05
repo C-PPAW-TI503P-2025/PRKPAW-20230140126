@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      nama: {                     
+        type: DataTypes.STRING,
+        allowNull: true,         
+      },
       checkIn: {
         type: DataTypes.DATE,
         allowNull: false,
