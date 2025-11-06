@@ -26,7 +26,7 @@ exports.register = async (req, res) => {
 
     res.status(201).json({
       message: "Registrasi berhasil",
-      data: { id: newUser.id, email: newUser.email, role: newUser.role }
+      data: { id: newUser.id, nama: newUser.nama, email: newUser.email, role: newUser.role }
     });
 
   } catch (error) {
