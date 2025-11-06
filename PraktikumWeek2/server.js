@@ -12,9 +12,11 @@ app.use(morgan("dev"));
 
 const presensiRoutes = require("./routes/presensi");
 const reportRoutes = require("./routes/reports");
+const authRoutes = require("./routes/auth");
 
 app.use("/api/presensi", presensiRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("Home Page for API");
