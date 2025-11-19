@@ -1,125 +1,91 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function RegisterPage() {
-  const [nama, setNama] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("mahasiswa");
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const [nama, setNama] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('mahasiswa'); // Default role
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
-
+    setError('');
+    
     try {
-      const response = await axios.post("http://localhost:3001/api/auth/register", {
-        nama,
-        email,
-        password,
-        role,
+      await axios.post('http://localhost:3001/api/auth/register', {
+        nama: nama,
+        email: email,
+        password: password,
+        role: role
       });
-
-      setSuccess("Registrasi berhasil! Silakan login.");
-      setTimeout(() => navigate("/login"), 1500); // redirect otomatis ke login
+      
+      alert('Registrasi Berhasil! Silakan Login.');
+      navigate('/login');
     } catch (err) {
-      setError(err.response ? err.response.data.message : "Registrasi gagal.");
+      setError(err.response ? err.response.data.message : 'Registrasi gagal');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100 flex flex-col items-center justify-center">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md border border-gray-200">
-        <h2 className="text-3xl font-bold text-center mb-6 text-indigo-700">
-          Register Akun
-        </h2>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">Register</h2>
+        
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Nama */}
-          <div>
-            <label htmlFor="nama" className="block text-sm font-medium text-gray-700">
-              Nama Lengkap
-            </label>
-            <input
-              id="nama"
-              type="text"
-              value={nama}
-              onChange={(e) => setNama(e.target.value)}
-              required
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+            {}
+            <div>
+                <label className="block text-gray-700">Nama Lengkap</label>
+                <input 
+                    type="text" 
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={nama} onChange={(e) => setNama(e.target.value)} required 
+                />
+            </div>
 
-          {/* Email */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
+            {}
+            <div>
+                <label className="block text-gray-700">Email</label>
+                <input 
+                    type="email" 
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={email} onChange={(e) => setEmail(e.target.value)} required 
+                />
+            </div>
 
-          {/* Password */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
+            {}
+            <div>
+                <label className="block text-gray-700">Password</label>
+                <input 
+                    type="password" 
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={password} onChange={(e) => setPassword(e.target.value)} required 
+                />
+            </div>
 
-          {/* Role */}
-          <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-              Role
-            </label>
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="mahasiswa">Mahasiswa</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
+            {}
+            <div>
+                <label className="block text-gray-700">Role</label>
+                <select 
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={role} onChange={(e) => setRole(e.target.value)}
+                >
+                    <option value="mahasiswa">Mahasiswa</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
 
-          {/* Tombol submit */}
-          <button
-            type="submit"
-            className="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-md shadow-sm hover:bg-indigo-700 transition duration-200"
-          >
-            Daftar
-          </button>
+            <button type="submit" className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition duration-200">
+                Daftar Sekarang
+            </button>
         </form>
-
-        {error && <p className="text-red-600 text-sm mt-4 text-center">{error}</p>}
-        {success && <p className="text-green-600 text-sm mt-4 text-center">{success}</p>}
-
-        <p className="text-center text-sm text-gray-600 mt-6">
-          Sudah punya akun?{" "}
-          <button
-            onClick={() => navigate("/login")}
-            className="text-indigo-600 hover:underline font-medium"
-          >
-            Login di sini
-          </button>
+        
+        <p className="text-center mt-4 text-gray-600">
+            Sudah punya akun? <span className="text-blue-500 cursor-pointer hover:underline" onClick={() => navigate('/login')}>Login disini</span>
         </p>
       </div>
     </div>
