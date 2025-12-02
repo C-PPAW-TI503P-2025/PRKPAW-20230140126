@@ -1,30 +1,45 @@
-const { Presensi } = require("../models");
+const { Presensi, User } = require("../models");
 const { Op } = require("sequelize");
 
 exports.getDailyReport = async (req, res) => {
   try {
-    const { nama, tanggalMulai, tanggalSelesai } = req.query;
+    const { userId, tanggalMulai, tanggalSelesai } = req.query;
 
     const whereClause = {};
 
-    if (nama) {
-      whereClause.nama = {
-        [Op.like]: `%${nama}%`, 
-      };
+    // Filter userId
+    if (userId) {
+      whereClause.userId = userId;
     }
 
+    // Filter tanggal
     if (tanggalMulai && tanggalSelesai) {
+      const startDate = new Date(tanggalMulai);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(tanggalSelesai);
+      endDate.setHours(23, 59, 59, 999);
+
       whereClause.checkIn = {
-        [Op.between]: [new Date(tanggalMulai), new Date(tanggalSelesai)],
+        [Op.between]: [startDate, endDate],
       };
     }
 
-    const records = await Presensi.findAll({ where: whereClause });
+    const records = await Presensi.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "nama", "email"]
+        }
+      ]
+    });
 
     res.status(200).json({
-      message: "Laporan harian berhasil diambil.",
+      message: "Laporan berhasil diambil",
       filter: {
-        nama: nama || null,
+        userId: userId || null,
         tanggalMulai: tanggalMulai || null,
         tanggalSelesai: tanggalSelesai || null,
       },
@@ -32,7 +47,6 @@ exports.getDailyReport = async (req, res) => {
       data: records,
     });
   } catch (error) {
-    console.error("❌ Error Report:", error.message);
     res.status(500).json({
       message: "Gagal mengambil laporan",
       error: error.message,

@@ -4,7 +4,10 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Presensi extends Model {
     static associate(models) {
-      Presensi.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+      Presensi.belongsTo(models.User, {
+        foreignKey: 'userId',
+        as: 'user'
+      });
     }
   }
 
@@ -14,21 +17,25 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: 'Users', 
+          model: 'Users',
           key: 'id'
         },
         onDelete: 'CASCADE',
       },
-      nama: {                     
-        type: DataTypes.STRING,
-        allowNull: true,         
-      },
       checkIn: {
         type: DataTypes.DATE,
-        allowNull: false,
+        allowNull: true,
       },
       checkOut: {
         type: DataTypes.DATE,
+        allowNull: true,
+      },
+      latitude: {
+        type: DataTypes.DECIMAL(10, 8),
+        allowNull: true,  
+      },
+      longitude: {
+        type: DataTypes.DECIMAL(10, 8),
         allowNull: true,
       },
     },

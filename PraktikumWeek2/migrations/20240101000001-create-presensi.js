@@ -10,7 +10,22 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       userId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Users',
+          key: 'id'
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
+      },
+      checkIn: {
+        type: Sequelize.DATE,
+        allowNull: true
+      },
+      checkOut: {
+        type: Sequelize.DATE,
+        allowNull: true
       },
       createdAt: {
         allowNull: false,
@@ -22,6 +37,7 @@ module.exports = {
       }
     });
   },
+
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Presensis');
   }

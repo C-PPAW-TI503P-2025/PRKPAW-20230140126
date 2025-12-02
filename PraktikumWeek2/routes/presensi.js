@@ -1,28 +1,12 @@
-const express = require('express');
-const { body } = require('express-validator');
+const express = require("express");
 const router = express.Router();
-const presensiController = require('../controllers/presensiController');
-const { addUserData } = require('../middleware/permissionMiddleware');
+const presensiController = require("../controllers/presensiController");
+const { authenticateToken: authMiddleware } = require("../middleware/authMiddleware");
 
-router.use(addUserData);
 
-// ✅ CRUD ROUTES
-router.get('/', presensiController.GetAll);
-router.post('/', presensiController.CreatePresensi);
 
-// ✅ PRESENSI ACTIONS
-router.post('/check-in', presensiController.CheckIn);
-router.post('/check-out', presensiController.CheckOut);
-
-// ✅ UPDATE dengan validasi format tanggal
-router.put('/:id', [
-  body('checkIn').isISO8601().withMessage('Format checkIn tidak valid (gunakan format ISO 8601)'),
-  body('checkOut').isISO8601().withMessage('Format checkOut tidak valid (gunakan format ISO 8601)')
-], presensiController.UpdatePresensi);
-
-// ✅ DELETE
-router.delete('/:id', presensiController.DeletePresensi);
+router.post("/check-in", authMiddleware, presensiController.CheckIn);
+router.post("/check-out", authMiddleware, presensiController.CheckOut);
+router.get("/", authMiddleware, presensiController.GetAll);
 
 module.exports = router;
-
-
