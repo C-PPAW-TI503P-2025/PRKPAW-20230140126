@@ -8,15 +8,20 @@ function ReportPage() {
     fetchReport();
   }, []);
 
-  const fetchReport = async () => {
-    const token = localStorage.getItem("token");
+const fetchReport = async () => {
+  const token = localStorage.getItem("token");
 
-    const res = await axios.get("http://localhost:3000/api/report/presensi", {
+  try {
+    const res = await axios.get("http://localhost:3001/api/reports", {
       headers: { Authorization: `Bearer ${token}` },
     });
-
+    
     setData(res.data.data);
-  };
+  } catch (error) {
+    console.error("Gagal ambil laporan:", error);
+    alert("Gagal ambil data: " + (error.response?.data?.message || error.message));
+  }
+};
 
   return (
     <div style={{ padding: 20 }}>
@@ -36,7 +41,8 @@ function ReportPage() {
         <tbody>
           {data.map((d, i) => (
             <tr key={i}>
-              <td>{d.user.username}</td>
+              <td>{d.user ? (d.user.username || d.user.nama) : "User Dihapus"}</td> 
+              
               <td>{d.checkIn}</td>
               <td>{d.checkOut || "-"}</td>
               <td>{d.latitude}</td>

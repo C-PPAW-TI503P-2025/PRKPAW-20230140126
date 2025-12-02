@@ -9,22 +9,32 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      // 👇 GANTI 'nama' JADI 'userId' 👇
       userId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Users',
+          model: 'Users', // Menghubungkan ke tabel Users
           key: 'id'
         },
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
+      // 👆 HAPUS KOLOM 'nama' DARI SINI 👆
+      
       checkIn: {
-        type: Sequelize.DATE,
-        allowNull: true
+        type: Sequelize.DATE
       },
       checkOut: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATE
+      },
+      // Kita tambahkan lat/long sekalian disini biar aman
+      latitude: {
+        type: Sequelize.DECIMAL(10, 8),
+        allowNull: true
+      },
+      longitude: {
+        type: Sequelize.DECIMAL(11, 8),
         allowNull: true
       },
       createdAt: {
@@ -37,7 +47,6 @@ module.exports = {
       }
     });
   },
-
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Presensis');
   }

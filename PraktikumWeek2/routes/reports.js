@@ -1,6 +1,11 @@
+// File: routes/reports.js
 const express = require('express');
 const router = express.Router();
- 	const reportController = require('../controllers/reportController');
- 	const { authenticateToken: addUserData, isAdmin } = require('../middleware/authMiddleware');
- 	router.get('/daily', [addUserData, isAdmin], reportController.getDailyReport);
- 	module.exports = router;
+
+const presensiController = require('../controllers/presensiController');
+const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
+
+// Route Get All Reports
+router.get('/', authenticateToken, isAdmin, presensiController.GetAll);
+
+module.exports = router;

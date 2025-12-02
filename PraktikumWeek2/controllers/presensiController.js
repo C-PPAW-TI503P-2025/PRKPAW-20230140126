@@ -1,5 +1,6 @@
-// controllers/presensiController.js
+// File: controllers/presensiController.js
 const { Presensi, User } = require("../models");
+const { Op } = require("sequelize"); // <--- WAJIB TAMBAH INI (Operator Sequelize)
 
 // =======================
 // CHECK-IN
@@ -13,19 +14,26 @@ exports.CheckIn = async (req, res) => {
       return res.status(400).json({ message: "Lokasi tidak ditemukan" });
     }
 
-    // Cek jika sudah pernah check-in hari ini
+    // Hitung awal hari ini (jam 00:00:00)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Hitung akhir hari ini (jam 23:59:59)
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    // Cek apakah user sudah pernah check-in di antara jam 00:00 s/d 23:59 hari ini
     const existing = await Presensi.findOne({
       where: {
         userId,
-        checkIn: { $gte: today }
+        checkIn: {
+          [Op.between]: [today, endOfToday] // <--- PAKAI INI YANG BENAR
+        }
       }
     });
 
     if (existing) {
-      return res.status(400).json({ message: "Anda sudah check-in hari ini" });
+      return res.status(400).json({ message: "Anda sudah check-in hari ini!" });
     }
 
     const newRecord = await Presensi.create({
@@ -41,6 +49,7 @@ exports.CheckIn = async (req, res) => {
     });
 
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ message: "Error server", error: error.message });
   }
 };
@@ -52,13 +61,21 @@ exports.CheckIn = async (req, res) => {
 exports.CheckOut = async (req, res) => {
   try {
     const { id: userId } = req.user;
-
+    
+    // Cari yang checkIn hari ini tapi checkOut-nya masih kosong
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
     const presensi = await Presensi.findOne({
-      where: { userId, checkOut: null }
+      where: { 
+        userId, 
+        checkIn: { [Op.gte]: today }, // Cari yang checkin hari ini
+        checkOut: null // Dan checkoutnya masih kosong
+      }
     });
 
     if (!presensi) {
-      return res.status(400).json({ message: "Belum check-in" });
+      return res.status(400).json({ message: "Belum check-in atau sudah check-out hari ini" });
     }
 
     presensi.checkOut = new Date();
@@ -88,9 +105,10 @@ exports.GetAll = async (req, res) => {
         {
           model: User,
           as: "user",
-          attributes: ["id", "username", "email"]
+          attributes: ["id", "nama", "email"] // Pastikan kolom 'nama' ada di tabel Users
         }
-      ]
+      ],
+      order: [['checkIn', 'DESC']] // Urutkan dari yang terbaru
     });
 
     res.status(200).json({
@@ -99,6 +117,7 @@ exports.GetAll = async (req, res) => {
     });
 
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       message: "Server error",
       error: error.message
