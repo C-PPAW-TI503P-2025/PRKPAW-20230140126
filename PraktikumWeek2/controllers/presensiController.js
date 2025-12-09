@@ -1,6 +1,31 @@
 // File: controllers/presensiController.js
 const { Presensi, User } = require("../models");
-const { Op } = require("sequelize"); // <--- WAJIB TAMBAH INI (Operator Sequelize)
+const { Op } = require("sequelize"); 
+const multer = require('multer');
+const path = require('path');
+
+// =======================
+// KONFIGURASI MULTER
+// =======================
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); 
+  },
+  filename: (req, file, cb) => {
+    // Format nama file: userId-timestamp.ext
+    cb(null, `${req.user.id}-${Date.now()}${path.extname(file.originalname)}`);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Hanya file gambar yang diperbolehkan!'), false);
+  }
+};
+
+exports.upload = multer({ storage: storage, fileFilter: fileFilter });
 
 // =======================
 // CHECK-IN
@@ -9,27 +34,33 @@ exports.CheckIn = async (req, res) => {
   try {
     const { id: userId, nama: userName } = req.user;
     const { latitude, longitude } = req.body;
+    
+
     const buktiFoto = req.file ? req.file.path : null; 
+
+
+    console.log("--------------------------------------------");
+    console.log("DEBUG CHECK-IN USER:", userName);
+    console.log("Lokasi:", latitude, longitude);
+    console.log("File Foto:", req.file); 
+    console.log("Path Foto:", buktiFoto); 
+    console.log("--------------------------------------------");
 
 
     if (!latitude || !longitude) {
       return res.status(400).json({ message: "Lokasi tidak ditemukan" });
     }
 
-    // Hitung awal hari ini (jam 00:00:00)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
-    // Hitung akhir hari ini (jam 23:59:59)
     const endOfToday = new Date();
     endOfToday.setHours(23, 59, 59, 999);
 
-    // Cek apakah user sudah pernah check-in di antara jam 00:00 s/d 23:59 hari ini
     const existing = await Presensi.findOne({
       where: {
         userId,
         checkIn: {
-          [Op.between]: [today, endOfToday] // <--- PAKAI INI YANG BENAR
+          [Op.between]: [today, endOfToday]
         }
       }
     });
@@ -38,16 +69,13 @@ exports.CheckIn = async (req, res) => {
       return res.status(400).json({ message: "Anda sudah check-in hari ini!" });
     }
 
-    
     const newRecord = await Presensi.create({
       userId,
       checkIn: new Date(),
       latitude,
       longitude,
-      buktiFoto: buktiFoto // Simpan path foto
+      buktiFoto: buktiFoto 
     });
-
-
 
     return res.status(200).json({
       message: "Check-in berhasil",
@@ -55,28 +83,24 @@ exports.CheckIn = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("Error CheckIn:", error);
     return res.status(500).json({ message: "Error server", error: error.message });
   }
 };
 
 
-// =======================
-// CHECK-OUT
-// =======================
 exports.CheckOut = async (req, res) => {
   try {
     const { id: userId } = req.user;
     
-    // Cari yang checkIn hari ini tapi checkOut-nya masih kosong
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     const presensi = await Presensi.findOne({
       where: { 
         userId, 
-        checkIn: { [Op.gte]: today }, // Cari yang checkin hari ini
-        checkOut: null // Dan checkoutnya masih kosong
+        checkIn: { [Op.gte]: today }, 
+        checkOut: null 
       }
     });
 
@@ -100,34 +124,6 @@ exports.CheckOut = async (req, res) => {
   }
 };
 
-const multer = require('multer');
-const path = require('path');
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); 
-  },
-  filename: (req, file, cb) => {
-    // Format nama file: userId-timestamp.jpg
-    cb(null, `${req.user.id}-${Date.now()}${path.extname(file.originalname)}`);
-  }
-});
-
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image/')) {
-    cb(null, true);
-  } else {
-    cb(new Error('Hanya file gambar yang diperbolehkan!'), false);
-  }
-};
-
-exports.upload = multer({ storage: storage, fileFilter: fileFilter });
-
-
-
-// =======================
-// GET ALL (REPORT PRESENSI)
-// =======================
 exports.GetAll = async (req, res) => {
   try {
     const data = await Presensi.findAll({
@@ -135,10 +131,10 @@ exports.GetAll = async (req, res) => {
         {
           model: User,
           as: "user",
-          attributes: ["id", "nama", "email"] // Pastikan kolom 'nama' ada di tabel Users
+          attributes: ["id", "nama", "email"]
         }
       ],
-      order: [['checkIn', 'DESC']] // Urutkan dari yang terbaru
+      order: [['checkIn', 'DESC']]
     });
 
     res.status(200).json({
